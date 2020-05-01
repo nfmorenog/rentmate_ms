@@ -1,0 +1,31 @@
+version: '3'
+services:
+  rentmate-anuncios-db:
+    container_name: rentmate-anuncios-db
+    image: mysql:5.7
+    healthcheck:
+      test: "mysqlcheck -u$$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE"
+      interval: 20s
+      timeout: 5s
+      retries: 15
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: dbAnuncios
+      MYSQL_USER: paula
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+  rentmate-anuncios-ms:
+    restart: on-failure
+    build: .
+    expose:
+      - "4040"
+    command: mvn clean spring-boot:run
+    ports:
+      - 4040:4040
+    environment:
+      WAIT_HOSTS: mysql:3306
+      SPRING_DATASOURCE_URL: jdbc:mysql://rentmate-anuncios-db:3306/dbAnuncios?serverTimezone=UTC
+    depends_on:
+      - rentmate-anuncios-db
+    
